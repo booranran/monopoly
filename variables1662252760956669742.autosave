@@ -1,0 +1,16 @@
+Button yesButton, noButton;
+Quantity upButton, downButton;
+
+PFont font;
+int money = 5000000;
+
+float money_X;
+float money_Y;
+
+boolean buyLandPopup = true;
+boolean buyBuildingPopup = false;
+
+String gameState = "IDLE";
+
+HashMap<String, String> uidNameMap = new HashMap<String, String>(); //rfid uid 저장
+HashMap<String, Country> countryData = new HashMap<String, Country>();

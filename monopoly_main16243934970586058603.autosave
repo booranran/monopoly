@@ -1,0 +1,82 @@
+import processing.serial.*;
+import java.util.Collections;
+
+
+Serial myPort;
+String countryName = "";
+boolean showButtons = false;
+
+
+void setup() {
+  size(1280, 720);
+  background(#fafafa);
+  showButtons = true;
+  yesButton = new Button(403, 617, 218, 62, "YES", -1);
+  noButton = new Button(663, 617, 218, 62, "NO", -1);
+  
+  upButton = new Quantity(180, 120, 220, 120, 200, 90);
+  downButton = new Quantity(180, 160, 220, 160, 200, 190);
+  
+  font = loadFont("NotoSansKR-Thin_Bold-48.vlw");
+
+  textFont(font);
+
+  money_X = width/2;
+  money_Y = height/2;
+
+  uidNameMap.put("A1B2C3D4", "SEOUL");
+  uidNameMap.put("BD950E05", "NEWYORK");
+  uidNameMap.put("73624496", "TOKYO");
+  uidNameMap.put("BD950E05", "BEIJING");
+  uidNameMap.put("23892303", "SAOPAULO");
+  uidNameMap.put("E5AE0905", "OTTAWA");
+  uidNameMap.put("53251696", "BERLIN");
+  uidNameMap.put("B3A4CC95", "ISTANBUL");
+  uidNameMap.put("731CE995", "CAIRO");
+  uidNameMap.put("D3D14E96", "MANILA");
+  uidNameMap.put("13D94CA9", "LISBON");
+  uidNameMap.put("13D94CA9", "BERN");
+  uidNameMap.put("13D94CA9", "STOCKHOLM");
+  uidNameMap.put("13D94CA9", "COPENHAGEN");
+  uidNameMap.put("13D94CA9", "ATHENS");
+  uidNameMap.put("13D94CA9", "MADRID");
+  uidNameMap.put("13D94CA9", "PARIS");
+  uidNameMap.put("13D94CA9", "ROME");
+
+  countryData.put("SEOUL", new Country("서울", 1000000, 2000000, 0, 0, 0, false));
+  countryData.put("NEWYORK", new Country("NEWYORK", 350000, 35000, 170000, 1100000, 1500000, false));
+  countryData.put("TOKYO", new Country("TOKYO", 300000, 26000, 130000, 900000, 1270000, false));
+  countryData.put("BEIJING", new Country("BEIJING", 80000, 4000, 200000, 180000, 450000, false));
+  countryData.put("SAOPAULO", new Country("SAOPAULO", 240000, 20000, 100000, 750000, 1100000, false));
+  countryData.put("OTTAWA", new Country("OTTAWA", 200000, 16000, 80000, 550000, 1000000, false));
+  countryData.put("BERLIN", new Country("BERLIN", 180000, 14000, 70000, 500000, 950000, false));
+  countryData.put("ISTANBUL", new Country("ISTANBUL", 120000, 8000, 40000, 300000, 600000, false));
+  countryData.put("CAIRO", new Country("CAIRO", 100000, 6000, 30000, 270000, 550000, false));
+  countryData.put("MANILA", new Country("MANILA", 80000, 4000, 20000, 180000, 450000, false));
+  countryData.put("LISBON", new Country("LISBON", 260000, 22000, 110000, 800000, 1150000, false));
+  countryData.put("BERN", new Country("BERN", 180000, 14000, 70000, 500000, 950000, false));
+  countryData.put("STOCKHOLM", new Country("STOCKHOLM", 160000, 12000, 60000, 500000, 900000, false));
+  countryData.put("COPENHAGEN", new Country("COPENHAGEN", 160000, 12000, 60000, 500000, 900000, false));
+  countryData.put("ATHENS", new Country("ATHENS", 140000, 10000, 50000, 4500000, 750000, false));
+  countryData.put("MADRID", new Country("MADRID", 280000, 24000, 150000, 850000, 1400000, false));
+  countryData.put("PARIS", new Country("PARIS", 320000, 28000, 150000, 1000000, 1400000, false));
+  countryData.put("ROME", new Country("ROME", 320000, 28000, 150000, 1000000, 1400000, false));
+}
+
+void draw() {
+  background(#fafafa);
+  textSize(32);
+  textAlign(CENTER, CENTER);
+  fill(0, 0, 0);
+  text("현재자산: " + money, money_X, money_Y);
+
+  if (buyLandPopup && gameState.equals("BUY_LAND")) {
+    showBuyLandPopup(countryName);
+    return;
+  }
+
+  if (buyBuildingPopup) {
+    background(#fafafa);
+    showBuyBuildingPopup();
+  }
+}

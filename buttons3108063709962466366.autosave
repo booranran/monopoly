@@ -1,0 +1,58 @@
+class Button {
+  int x, y, w, h;
+  String label;
+  int idx;
+
+  Button(int x, int y, int w, int h, String label, int idx) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.label = label;
+    this.idx = idx;
+  }
+
+  void display() {
+    color c1 = #D9D9D9;
+    noStroke();
+    fill(isMouseOver() ? 200 : c1);
+    rect(x, y, w, h, 14);
+    
+    fill(0);
+    textSize(16);
+    text(label, x + w/2, y + h/2);
+  }
+  
+  boolean isMouseOver() {
+    return mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h;
+  }
+}
+
+class Quantity{
+  int x1, y1, x2, y2, x3, y3; //stepper triangle
+  
+  Quantity(int x1, int y1, int x2, int y2, int x3, int y3){
+    this.x1 = x1;
+    this.y1 = y1;
+    this.x2 = x2;
+    this.y2 = y2;
+    this.x3 = x3;
+    this.y3 = y3;
+  }
+  
+  void display(){
+    noStroke();
+    fill(#ff00ff);
+    triangle(x1, y1, x2, y2, x3, y3);
+  }
+  
+   boolean isMouseOver() {
+    int minX = min(x1, min(x2, x3));
+    int maxX = max(x1, max(x2, x3));
+    int minY = min(y1, min(y2, y3));
+    int maxY = max(y1, max(y2, y3));
+
+    return mouseX >= minX && mouseX <= maxX &&
+           mouseY >= minY && mouseY <= maxY;
+  }
+}

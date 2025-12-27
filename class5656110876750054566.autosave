@@ -1,0 +1,40 @@
+class Country {
+  String name;
+  int price;
+  int land_fee;
+  int villa_fee;
+  int building_fee;
+  int hotel_fee;
+  boolean purchased;
+
+  int villaCount = 0;
+  int buildingCount = 0;
+  int hotelCount = 0;
+  static final int MAX_TOTAL = 3;
+
+  Country(String n, int p, int lf, int vf, int bf, int hf, boolean own) {
+    this.name = n;
+    this.price = p;
+    this.land_fee = lf;
+    this.villa_fee = vf;
+    this.building_fee=bf;
+    this.hotel_fee = hf;
+    this.purchased = own;
+  }
+
+  int totalBuildings() {
+    return villaCount + buildingCount + hotelCount;
+  }
+
+  boolean canAddVilla() {
+    return purchased && villaCount    < 2 && totalBuildings() < MAX_TOTAL;
+  }
+  boolean canAddBuilding() {
+    return purchased && buildingCount < 1 && totalBuildings() < MAX_TOTAL;
+  }
+  boolean canAddHotel() {
+    return purchased && hotelCount    < 1 && totalBuildings() < MAX_TOTAL;
+  }
+ 
+  
+}

@@ -1,0 +1,90 @@
+void showBuyLandPopup(String country) {
+
+  Country selectedCountry = countryData.get(country);
+
+  if (selectedCountry != null) {
+    text(selectedCountry.name + "을(를) 구매 하시겠습니까?", width/2, height/2);
+    yesButton.display();
+    noButton.display();
+    
+    buyBuildingPopup = false;
+    gameState = "BUY_LAND";
+  }
+}
+
+void showBuyBuildingPopup() {
+  textSize(32);
+  text("건물을 지을까요?", width/2, height/2);
+  text("현재자산: " + money, money_X, money_Y);
+  yesButton.display();
+  noButton.display();
+  
+  buyLandPopup = false;
+  buyBuildingPopup = true;
+  gameState = "BUY_BUILDING";
+}
+
+
+
+
+
+
+void mousePressed() {
+  
+  money_X = 100;
+  money_Y = 100;
+  
+  // 선택 국가 안전장치
+  Country selectedCountry = countryData.get(countryName);
+
+  // 팝업 없는 상태에서만 태그/이벤트 처리
+  processTagEvent("A1B2C3D4");
+
+
+  switch (gameState) {
+  case "BUY_BUILDING":
+
+    // 빌딩 팝업: 돈 차감 절대 없음
+    if (gameState.equals("BUY_LAND")) {
+      if (yesButton.isMouseOver()) {
+        buyBuildingPopup = false;
+        gameState = "IDLE";
+      } 
+      else if (noButton.isMouseOver()) {
+        println("[BUILDING] NO on " + selectedCountry.name);
+        buyBuildingPopup = false;
+        gameState = "IDLE";
+      }
+    }
+    break;
+
+  case "BUY_LAND":
+    // 토지 팝업: 여기서만 돈 차감
+    if (buyLandPopup&&gameState.equals("BUY_LAND")) {
+      if (yesButton.isMouseOver()) {
+
+        // 이중 안전장치(이미 샀으면 또 차감 금지)
+        if (!selectedCountry.purchased) {
+          money -= selectedCountry.price;
+          selectedCountry.purchased = true; // Country에 boolean purchased 추가 권장
+        }
+
+        showBuyBuildingPopup();
+        return;
+        
+      } 
+      else if (noButton.isMouseOver()) {
+        println("[LAND] NO on " + selectedCountry.name);
+        buyLandPopup = false;
+        gameState = "IDLE";
+      }
+    }
+    break;
+    
+    
+  default:
+    // 다른 상태에선 아무것도 안 함
+    break;
+  }
+  println("[mousePressed] post state=" + gameState + ", money=" + money);
+}
