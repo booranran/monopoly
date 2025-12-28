@@ -6,6 +6,8 @@ void setup() {
   size(1280, 720, P3D);
   background(#fafafa);
   textureMode(NORMAL);
+  
+  boardImage = loadImage("board.png"); // data 폴더에 이미지 넣어야 함
 
   initDice();
   players = new Player[2];
@@ -41,16 +43,19 @@ void setup() {
   uidNameMap.put("0A493680", new RfidInfo("MANILA", 4));
   uidNameMap.put("E3563680", new RfidInfo("SINGAPORE", 5));
   uidNameMap.put("D6793480", new RfidInfo("OTTAWA", 7));
+
   uidNameMap.put("7EF63380", new RfidInfo("BERLIN", 8));
   uidNameMap.put("719B3580", new RfidInfo("BERN", 9));
   uidNameMap.put("83113580", new RfidInfo("STOCKHOLM", 10));
   uidNameMap.put("9A4B3480", new RfidInfo("COPENHAGEN", 11));
+
   uidNameMap.put("FD143480", new RfidInfo("SAOPAULO", 13));
   uidNameMap.put("D9583680", new RfidInfo("LISBON", 14));
   uidNameMap.put("9B553680", new RfidInfo("MADRID", 15));
   uidNameMap.put("BA6C3680", new RfidInfo("HAWAII", 16));
   uidNameMap.put("9E483480", new RfidInfo("SYDNEY", 17));
   uidNameMap.put("0B343680", new RfidInfo("NEWYORK", 19));
+
   uidNameMap.put("E23F3580", new RfidInfo("TOKYO", 20));
   uidNameMap.put("E9253680", new RfidInfo("PARIS", 21));
   uidNameMap.put("0B653680", new RfidInfo("ROME", 22));
@@ -82,6 +87,7 @@ void setup() {
   println("로드된 국가 수: " + countryData.size());
 
   cityNames = new String[countryData.size()];
+  println(cityNames.length);
   int index = 0;
   for (String name : countryData.keySet()) {
     cityNames[index] = name;
@@ -89,336 +95,70 @@ void setup() {
   }
 
   cityButtons = new Button[cityNames.length];
-
-  // 3. 루프를 돌면서 버튼 생성 및 배열에 추가
-  for (int i = 0; i < cityNames.length; i++) {
-    int x = 50 + (i % 3) * 120; // 가로 위치 계산
-    int y = 100 + (i / 3) * 80;  // 세로 위치 계산
-
-    // 버튼 생성자에 올바른 인자를 전달
-    // label에는 cityNames[i]를, idx에는 i를 전달
-    cityButtons[i] = new Button(x, y, 100, 50, cityNames[i], i, true);
-  }
   
   initializePlayerPositions();
+
 }
 
 void draw() {
-  // 매 프레임마다 배경을 한 번만 지워줍니다.
-  background(#fafafa);  
-  //// 팝업이 띄워져 있는지 확인
-  boolean isAnyPopupActive = false;
+  // 1. [배경 레이어] 화면 전체를 깨끗하게 지움
+  background(#fafafa); 
+  imageMode(CORNER);
+  int boardW = (110 * 2) + (100 * 6); // 820
+  int boardH = (110 * 2) + (100 * 4); // 620
+  int sidebarWidth = 320;
+  int startX = sidebarWidth + (width - sidebarWidth - boardW) / 2;
+  int startY = (height - boardH) / 2;
   
-  // 1. 맵(버튼들) 그리기
-  for (Button b : cityButtons) {
-    b.display();
-  }
+  image(boardImage, startX, startY, boardW, boardH);
+  
 
-  // 2. 플레이어(미니카) 업데이트 및 그리기
-  // 팝업보다 아래, 버튼보다 위에 그려야 자연스러움
-  for (Player p : players) {
-    p.updateAndDraw(); // ★ 여기서 이동 계산 + 경로선 그리기 + 차 그리기 다 함
-  }
-  
-  // 3. 각종 팝업 그리기 (기존 코드 유지)
-  if (gameState.equals("BUY_LAND")) {
-     // ...
-  }
-  
- 
+  // 2. [기본 레이어] 항상 보여야 하는 것들 (사이드바 + 보드판 + 말)
+  drawSidebar();       // ① 왼쪽 플레이어 정보창 그리기
+  //drawGameBoard();     // ② 오른쪽 보드판(버튼들) 그리기
+  drawPlayers();       // ③ 플레이어 자동차 그리기
 
-  if (buyLandPopup && gameState.equals("BUY_LAND")) {
-    //background(#fafafa);
+  // 3. [오버레이 레이어] 상황에 따라 위에 덮어씌우는 것들
+  
+  // (1) 주사위 굴리기 모드일 때 (보드판 위에 3D 주사위 띄우기)
+  if (gameState.equals("DICE")) {
+    drawDiceOverlay(); 
+  }
+  
+  // (2) 각종 팝업창 (이벤트 발생 시 맨 위에 표시)
+  // 기존 if문들을 그대로 쓰되, 'else'로 묶지 말고 필요한 것만 위에 얹음
+  if (gameState.equals("BUY_LAND") && buyLandPopup) {
     showBuyLandPopup(countryName);
-    isAnyPopupActive = true;
   }
-
-  if (buyBuildingPopup && gameState.equals("BUY_BUILDING")) {
+  else if (gameState.equals("BUY_BUILDING") && buyBuildingPopup) {
     showBuyBuildingPopup();
-    isAnyPopupActive = true;
   }
-
-  if (chooseBuildingPopup && gameState.equals("CHOOSE_BUILDING")) {
+  else if (gameState.equals("CHOOSE_BUILDING") && chooseBuildingPopup) {
     showChooseBuildingPopup();
-    isAnyPopupActive = true;
   }
-
-  if (payTollPopup && gameState.equals("PAY_TOLL")) {
+  else if (gameState.equals("PAY_TOLL") && payTollPopup) {
     showTollPopup();
-    isAnyPopupActive = true;
   }
-
-  if (gameEndPopup && gameState.equals("THE_END")) {
-    showcheckGameEnd();
-    isAnyPopupActive = true;
-  }
-
-  if (salaryPopup && gameState.equals("SALARY")) {
+  else if (gameState.equals("SALARY") && salaryPopup) {
     showSalaryPopup();
-    isAnyPopupActive = true;
   }
-
-  if (islandPopup && gameState.equals("ISLAND")) {
+  else if (gameState.equals("ISLAND") && islandPopup) {
     showIslandPopup();
-    isAnyPopupActive = true;
   }
-
-  if (eventPopup && gameState.equals("EVENT")) {
+  else if (gameState.equals("EVENT") && eventPopup) {
     showEventPopup();
-    isAnyPopupActive = true;
   }
-
-  if (spacePopup && gameState.equals("SPACE")) {
+  else if (gameState.equals("SPACE") && spacePopup) {
     showSpacePopup();
-    isAnyPopupActive = true;
   }
-
-  ////// 어떤 팝업도 활성화되지 않았을 때만 기본 화면을 보여줍니다.
-  if (!isAnyPopupActive) {
-    showIdlePopup();
+  else if (gameState.equals("THE_END") && gameEndPopup) {
+    showcheckGameEnd();
   }
-
-  if (dicePopup && gameState.equals("DICE")) {
-    showDicePopup();
-    updateRollAndMaybeMove();
-    isAnyPopupActive = true;
-  }
+  
+  // ※ 'showIdlePopup'은 이제 drawSidebar가 역할을 대신하므로 삭제하거나
+  //   IDLE 상태일 때만 특정 버튼을 보여주는 용도로 축소해야 함.
 }
-
-void mousePressed() {
-
-
-  Player p = getCurrentPlayer();
-
-  switch (gameState) {
-
-  case "IDLE":
-    if (rollButton.isMouseOver()) {
-      dicePopup = true;
-      gameState = "DICE";
-      startRoll();
-      println(gameState);
-      println("let's roll a dice!");
-      return;
-    }
-    break;
-
-  case "BUY_LAND":
-    // 토지 팝업: 여기서만 돈 차감
-    if (buyLandPopup) {
-      if (yesButton.isMouseOver()) {
-        // 이중 안전장치(이미 샀으면 또 차감 금지)
-        if (!selectedCountry.purchased) {
-          if (p.money >= selectedCountry.price) {
-            p.money -= selectedCountry.price;
-            selectedCountry.purchased = true;
-            selectedCountry.ownerId = p.id;
-            p.ownedCountries.add(selectedCountry.name);
-            println(p.name + "구매" + selectedCountry.name);
-          } else {
-
-            currentMessage = "돈 없음!";
-            println(currentMessage);
-
-            buyLandPopup = false;
-            Turn();
-            gameState = "IDLE";
-            return;
-          }
-        } else {
-          buyLandPopup = false;
-          Turn();
-          gameState = "IDLE";
-          return;
-        }
-
-        buyLandPopup = false;
-        buyBuildingPopup = true;
-        println(gameState);
-
-        gameState = "BUY_BUILDING";
-        println(gameState);
-        return;
-      } else if (noButton.isMouseOver()) {
-        buyLandPopup = false;
-        Turn();
-        gameState = "IDLE";
-        return;
-      }
-    }
-    break;
-
-  case "BUY_BUILDING":
-    if (buyBuildingPopup&&gameState.equals("BUY_BUILDING")) {
-
-      if (yesButton.isMouseOver())
-      {
-        buyBuildingPopup = false;
-        chooseBuildingPopup = true;
-        gameState = "CHOOSE_BUILDING";
-        println(gameState);
-        return;
-      } else if (noButton.isMouseOver()) {
-        buyBuildingPopup = false;
-        Turn();
-        gameState = "IDLE";
-        return;
-      }
-    }
-    break;
-
-  case "CHOOSE_BUILDING":
-    if (chooseBuildingPopup&&gameState.equals("CHOOSE_BUILDING")) {
-      println(selectedCountry);
-      boolean changed = false;
-      changed |= villa.handleClick(selectionTotal());
-      changed |= building.handleClick(selectionTotal());
-      changed |= hotel.handleClick(selectionTotal());
-
-      if (buyButton.isMouseOver()) {
-        int cost = selectionCost();
-        if (cost<=p.money) {
-          p.money -= cost;
-
-          selectedCountry.villaCount += villa.get();
-          selectedCountry.buildingCount += building.get();
-          selectedCountry.hotelCount += hotel.get();
-
-          villa.set(0);
-          building.set(0);
-          hotel.set(0);
-
-          chooseBuildingPopup = false;
-          Turn();
-          gameState = "IDLE";
-          println(gameState);
-
-          return;
-        } else {
-          Turn();
-          println("돈부족");
-        }
-      }
-    }
-
-  case "PAY_TOLL":
-    if (payTollPopup&&gameState.equals("PAY_TOLL")) {
-      if (payTollPopup && confirmButton.isMouseOver()) {
-
-        // 통행료 계산
-        int toll = selectedCountry.currentRent();
-
-        // 땅 주인 찾기
-        Player owner = players[selectedCountry.ownerId-1]; // id는 1부터 시작하므로 -1
-
-        // 현재 플레이어의 돈이 통행료보다 많으면
-        if (p.money >= toll) {
-          p.money -= toll; // 통행료 지불
-          owner.money += toll;       // 땅 주인에게 통행료 지급
-          //println(p.name + "가 " + selectedCountry.name + "의 통행료 " + toll + "원을 지불했습니다.");
-          currentMessage = p.name + "가 " + selectedCountry.name + "의 통행료 " + toll + "원을 지불했습니다.";
-          println(currentMessage);
-        } else {
-          // 돈이 부족하면 파산
-          //println(p.name + "의 돈이 부족합니다! 파산.");
-          currentMessage = p.name + "의 돈이 부족합니다! 파산. ";
-          p.isBankrupt = true; // 파산 상태로 만듦
-          showcheckGameEnd();
-          return;
-        }
-        // 통행료 지불이 끝났으니, 다음 턴으로 넘기고 팝업 닫기
-
-        payTollPopup = false;
-        Turn();
-        gameState = "IDLE";
-      }
-      break;
-    }
-  case "SALARY":
-    if (confirmButton.isMouseOver()) {
-      p.money += 20000;
-      println(p.name + "의 돈" + p.money);
-      salaryPopup = false;
-      Turn();
-      gameState = "IDLE";
-      break;
-    }
-
-  case "ISLAND":
-    if (confirmButton.isMouseOver()) {
-      println("island");
-      Turn();
-      gameState = "IDLE";
-      break;
-    }
-
-  case "EVENT":
-    if (confirmButton.isMouseOver()) {
-      println(gameState);
-      eventPopup = false;
-      gameState = "IDLE";
-      Turn();
-      return;
-    }
-    break;
-
-  case "SPACE":
-    if (spacePopup) {
-      for (int i = 0; i < cityButtons.length; i++) {
-        if (cityButtons[i].isMouseOver()) {
-          String destinationName = cityButtons[i].label;
-          println(destinationName + " 여기를 선택했어요");
-
-          // 키 유효성 체크(선택 실수 방지)
-          if (!countryData.containsKey(destinationName)) {
-            println("[SPACE] unknown destination: " + destinationName);
-            return;
-          }
-
-          // 이름 매칭으로 boardIndex 찾기
-          for (String uid : uidNameMap.keySet()) {
-            RfidInfo info = uidNameMap.get(uid);
-            if (info.name.equals(destinationName)) {
-              // 위치 이동 + 이벤트 처리
-              p.position = info.boardIndex;
-              processBoardIndex(p.position);
-
-              // 우주여행 팝업 정리(다음 입력 가로막지 않도록)
-              spacePopup = false;
-              Turn();                // 턴 넘길지/안넘길지 정책에 맞게
-              return;                // 찾았으니 종료
-            }
-          }
-
-          // 여기까지 왔다는 건 RFID 매칭 실패
-          println("[SPACE] RFID mapping not found for: " + destinationName);
-          return;
-        }
-      }
-    }
-    break;
-
-  default:
-    break;
-  }
-}
-
-void keyTyped() {
-  if (key == '1') {
-    processTagEvent("41103480"); // 베이징 태그
-  } else if (key == '2') {
-    processTagEvent("95363480"); // 이스탄불  태그
-  } else if (key=='3') {
-    processTagEvent("1E7b3480");
-  } else if (key=='4') {
-    processTagEvent("E3563680");
-  } else if (key=='5') {
-    processTagEvent("12654F05");
-  } else if (key=='6') {
-    processTagEvent("BORAN5");
-  } else if (key=='7') {
-    processTagEvent("BORAN6");
-  } else if (key == '8') {
-    processTagEvent("BORAN7");
-  }
+boolean isEventPopupState() {
+  return gameState.equals("BUY_LAND") || gameState.equals("PAY_TOLL") || 
+         gameState.equals("EVENT") || gameState.equals("ISLAND") || gameState.equals("THE_END");
 }

@@ -43,6 +43,7 @@ HashMap<String, Country> countryData = new HashMap<String, Country>();
 
 // 보드
 final int BOARD_SIZE = 24;
+PImage boardImage;
 
 //주사위
 float angleX = 0.0f;
