@@ -1,19 +1,7 @@
 //-----------ui 함수----------------
 
-void showIdlePopup() {
-
-  textSize(32);
-  fill(0);
-  textAlign(CENTER, CENTER);
-
-  text("플레이어 " + p.name + "의 차례", width/2, height/2 - 40);
-  text("현재 자산: " + p.money, money_X, money_Y + 20);
-  text("소유 국가: " + p.ownedCountries, width/2, height/2 + 60);
-  rollButton.display();
-}
-
 void showDicePopup() {
- 
+
   pushStyle();
   // 반투명 오버레이/카드 등은 선택
   // 배치 + 조명
@@ -42,8 +30,8 @@ void showBuyLandPopup(String country) {
 
   if (selectedCountry != null) {
     fill(0);
-    text("현재자산: " + p.money, money_X2, money_Y2);
-    text(selectedCountry.name + "을(를) 구매 하시겠습니까?", width/2, height/2);
+
+    text(selectedCountry.name + "을(를) 구매 하시겠습니까?", 320 + (width-320)/2, height/2 + fallY);
     if (p.money < selectedCountry.price) {
       // 돈이 부족하면 yes 버튼 비활성화
       yesButton.enabled = false;
@@ -100,7 +88,6 @@ void showChooseBuildingPopup() {
 
 void showTollPopup() {
   // 팝업에 표시될 텍스트
-  text("현재자산: " + p.money, money_X, money_Y);
   text(selectedCountry.name + "에 도착했습니다!", width/2, height/2 - 50);
   text(selectedCountry.ownerId + "P의 땅입니다.", width/2, height/2 - 20);
   text("통행료 " + selectedCountry.currentRent() + "원을 지불해야 합니다.", width/2, height/2 + 30);
@@ -192,28 +179,23 @@ Player getCurrentPlayer() {
 }
 
 void Turn() {
-  //무인도 상태 확인
+  // 무인도 로직은 유지하되, 여기서 movePlayer 호출 금지!
   if (p.isIslanded) {
     p.islandTurns++;
-    println(p.name + "는 무인도에 갇혔다. (남은 턴: " + (3 - p.islandTurns) + ")");
+    println(p.name + "는 무인도.. (남은 턴: " + (3 - p.islandTurns) + ")");
 
     if (p.islandTurns >= 3) {
       p.isIslanded = false;
       p.islandTurns = 0;
-      println(p.name + "가 무인도에서 탈출했습니다!");
+      println("무인도 탈출!");
     } else {
-      nextTurn();  // 아직 탈출 못했으면 다음 플레이어로
+      nextTurn(); // 다음 사람으로 넘김
       return;
     }
   }
 
-  //주사위 굴림
-  int dice = int(random(1, 7));
-  println(p.name + "이(가) 주사위를 굴렸습니다: " + dice);
-
-  // 🚶 이동 + 월급칸 체크 + 도착 이벤트 실행
-  movePlayer(dice);
   nextTurn();
+  gameState = "IDLE";
 }
 
 
@@ -249,8 +231,8 @@ Player nextTurn() {
 void movePlayer(int steps) {
   // 현재 턴인 플레이어 가져오기 (p 변수가 전역이라면 p 사용, 아니면 배열에서 가져오기)
   // 안전하게 배열에서 가져오는 방식 추천
-  Player cp = players[currentPlayer]; 
-  
+  Player cp = players[currentPlayer];
+
   int startPos = cp.position;
   int finalPos = (startPos + steps) % cityNames.length; // 혹은 BOARD_SIZE
 
@@ -267,20 +249,19 @@ void movePlayer(int steps) {
   // 한 칸씩 건너가면서 모든 좌표를 pathQueue에 담아야 함
   for (int i = 1; i <= steps; i++) {
     int nextIndex = (startPos + i) % cityNames.length;
-    
+
     // 해당 칸의 버튼(투명 내비게이션) 가져오기
     Button target = cityButtons[nextIndex];
-    
+
     // 버튼의 정중앙 좌표 계산
-    float destX = target.x + target.w / 2.0f;
-    float destY = target.y + target.h / 2.0f;
-    
+    float destX = target.x + target.w / 1.5f;
+    float destY = target.y + target.h / 1.5f;
+
     // 큐에 추가 (이제 updateAndDraw가 이걸 보고 움직임)
     cp.pathQueue.add(new PVector(destX, destY));
   }
-  
-  println("이동 경로 계산 완료. 출발!");
 
+  println("이동 경로 계산 완료. 출발!");
 }
 
 
@@ -330,10 +311,6 @@ void drawPlayers() {
 
 // [3] 왼쪽 사이드바 그리기 (여기로 정보창 이사!)
 void drawSidebar() {
-  // 사이드바 배경 (화면 왼쪽 320px 영역)
-  fill(240); // 연한 회색
-  noStroke();
-  rect(0, 0, 320, height);
 
   // 구분선
   stroke(200);
@@ -365,7 +342,7 @@ void drawSidebar() {
   }
 
   // [중요] 주사위 굴리기 버튼은 'IDLE' 상태일 때만 사이드바 하단에 표시
-  if (gameState.equals("IDLE")) {
+  if (gameState.equals("IDLE") && !p.isMoving) {
     rollButton.x = 160;   // 사이드바 가운데 좌표
     rollButton.y = 650;   // 아래쪽
     rollButton.display();
@@ -376,11 +353,11 @@ void drawSidebar() {
 void initializePlayerPositions() {
   if (cityButtons != null && cityButtons.length > 0) {
     Button startBtn = cityButtons[0]; // 0번 칸(출발지) 가져오기
-    
+
     // 플레이어들을 출발지 좌표로 강제 이동
     for (Player p : players) {
-      p.visualX = startBtn.x + startBtn.w / 2.0f;
-      p.visualY = startBtn.y + startBtn.h / 2.0f;
+      p.visualX = startBtn.x + startBtn.w / 1.5f;
+      p.visualY = startBtn.y + startBtn.h / 1.5f;
     }
     println("플레이어 위치 초기화 완료: " + players[0].visualX + ", " + players[0].visualY);
   }
@@ -392,7 +369,7 @@ void handlePlayerArrival(int playerId) {
   // 1. 도착한 플레이어 객체 찾기
   // (배열은 0부터 시작하니까 id가 1이면 index는 0)
   Player p = players[playerId - 1];
-  
+
   println("플레이어 " + playerId + " 도착 완료! 이벤트 실행.");
 
   // 2. 해당 위치의 이벤트(팝업) 실행하기
@@ -407,9 +384,11 @@ void drawDiceOverlay() {
   // 조명 및 3D 설정
   pushMatrix();
   // 위치를 보드판 중앙 쯤으로 이동 (우측 영역의 중심)
-  translate(320 + (width-320)/2, height/2 + fallY, 200);
+  translate(320 + (width-320)/2, height/2 + fallY, 0);
+  ambientLight(150, 150, 150);
+  directionalLight(255, 255, 255, 0, 0, -1);
+  lightSpecular(255, 255, 255);
 
-  // ... (기존 회전 및 큐브 그리기 로직 유지) ...
   rotateX(currentAngle.x);
   rotateY(currentAngle.y);
   drawTextureCube(50); // 큐브 크기
@@ -417,8 +396,6 @@ void drawDiceOverlay() {
 
   updateRollAndMaybeMove(); // 물리 엔진 계속 돌리기
 }
-
-
 
 
 void mousePressed() {
@@ -601,31 +578,43 @@ void mousePressed() {
       for (int i = 0; i < cityButtons.length; i++) {
         if (cityButtons[i].isMouseOver()) {
           String destinationName = cityButtons[i].label;
-          println(destinationName + " 여기를 선택했어요");
+          println(destinationName + " 선택함");
 
-          // 키 유효성 체크(선택 실수 방지)
+          // 1. 유효성 체크
           if (!countryData.containsKey(destinationName)) {
-            println("[SPACE] unknown destination: " + destinationName);
+            println("알 수 없는 목적지");
             return;
           }
 
-          // 이름 매칭으로 boardIndex 찾기
+          // 2. 보드 인덱스 찾아서 이동
           for (String uid : uidNameMap.keySet()) {
             RfidInfo info = uidNameMap.get(uid);
-            if (info.name.equals(destinationName)) {
-              // 위치 이동 + 이벤트 처리
-              p.position = info.boardIndex;
-              processBoardIndex(p.position);
 
-              // 우주여행 팝업 정리(다음 입력 가로막지 않도록)
+            if (info.name.equals(destinationName)) {
+
+              // [수정 핵심 1] 현재 위치에서 목표 위치까지 몇 칸 가야 하는지 계산
+              int currentPos = p.position;
+              int targetPos = info.boardIndex;
+
+              // (목표 - 현재 + 24) % 24 = 앞으로 가야 할 칸 수 (시계방향)
+              int steps = (targetPos - currentPos + 24) % 24;
+
+              // 만약 제자리를 선택했다면 한 바퀴 돌리기 (선택사항)
+              if (steps == 0) steps = 24;
+
+              println("우주여행 출발! " + currentPos + " -> " + targetPos + " (" + steps + "칸 이동)");
+
+              // [수정 핵심 2] movePlayer 함수를 써서 '스르륵' 이동시킴
+              // (이 함수가 도착하면 알아서 팝업도 띄워줌)
+              movePlayer(steps);
+
+              // [수정 핵심 3] 팝업 닫기 (Turn() 호출 절대 금지!)
               spacePopup = false;
-              Turn();                // 턴 넘길지/안넘길지 정책에 맞게
-              return;                // 찾았으니 종료
+              gameState = "IDLE";
+
+              return; // 종료
             }
           }
-
-          // 여기까지 왔다는 건 RFID 매칭 실패
-          println("[SPACE] RFID mapping not found for: " + destinationName);
           return;
         }
       }

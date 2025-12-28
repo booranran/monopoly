@@ -115,7 +115,7 @@ class Player {
     if (id == 1) fill(50, 50, 255); else fill(255, 50, 50);
     rect(visualX, visualY, 30, 20, 5);
     fill(0); textAlign(CENTER); textSize(12);
-    text("P" + id, visualX, visualY - 15);
+    text("P" + id, visualX, visualY);
   }
 }
 

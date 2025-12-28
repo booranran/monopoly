@@ -19,6 +19,7 @@ void setup() {
   showButtons = true;
   yesButton = new Button(403, 617, 218, 62, "YES", -1);
   noButton = new Button(663, 617, 218, 62, "NO", -1);
+  
   buyButton = new Button(width/2, 617, 218, 62, "BUY", -1, true);
   confirmButton = new Button(width/2, 617, 218, 62, "CONFIRM", -1, true);
   rollButton = new Button(width/2, 617, 218, 62, "ROLL", -1, true);
@@ -38,33 +39,35 @@ void setup() {
   money_Y2 = 604;
 
   uidNameMap.put("41103480", new RfidInfo("BEIJING", 1));
-  uidNameMap.put("95363480", new RfidInfo("ISTANBUL", 2));
-  uidNameMap.put("1E7b3480", new RfidInfo("CAIRO", 3));
+  uidNameMap.put("1E7b3480", new RfidInfo("CAIRO", 2));
+  uidNameMap.put("95363480", new RfidInfo("ISTANBUL", 3));
   uidNameMap.put("0A493680", new RfidInfo("MANILA", 4));
   uidNameMap.put("E3563680", new RfidInfo("SINGAPORE", 5));
-  uidNameMap.put("D6793480", new RfidInfo("OTTAWA", 7));
+  uidNameMap.put("D6793480", new RfidInfo("OTTAWA", 6));
+  uidNameMap.put("BORAN5", new RfidInfo("ISLAND", 7));
 
   uidNameMap.put("7EF63380", new RfidInfo("BERLIN", 8));
   uidNameMap.put("719B3580", new RfidInfo("BERN", 9));
   uidNameMap.put("83113580", new RfidInfo("STOCKHOLM", 10));
   uidNameMap.put("9A4B3480", new RfidInfo("COPENHAGEN", 11));
+  uidNameMap.put("BORAN7", new RfidInfo("SPACE", 12));
 
-  uidNameMap.put("FD143480", new RfidInfo("SAOPAULO", 13));
-  uidNameMap.put("D9583680", new RfidInfo("LISBON", 14));
-  uidNameMap.put("9B553680", new RfidInfo("MADRID", 15));
-  uidNameMap.put("BA6C3680", new RfidInfo("HAWAII", 16));
-  uidNameMap.put("9E483480", new RfidInfo("SYDNEY", 17));
-  uidNameMap.put("0B343680", new RfidInfo("NEWYORK", 19));
 
-  uidNameMap.put("E23F3580", new RfidInfo("TOKYO", 20));
-  uidNameMap.put("E9253680", new RfidInfo("PARIS", 21));
-  uidNameMap.put("0B653680", new RfidInfo("ROME", 22));
-  uidNameMap.put("D3103580", new RfidInfo("SEOUL", 23));
+  uidNameMap.put("D9583680", new RfidInfo("LISBON", 13));
+  uidNameMap.put("9B553680", new RfidInfo("MADRID", 14));
+  uidNameMap.put("BA6C3680", new RfidInfo("HAWAII", 15));
+  uidNameMap.put("9E483480", new RfidInfo("SYDNEY", 16));
+  uidNameMap.put("0B343680", new RfidInfo("NEWYORK", 17));
+  uidNameMap.put("FD143480", new RfidInfo("SAOPAULO", 18));
+
+  uidNameMap.put("BORAN6", new RfidInfo("EVENT", 19));
+
+  uidNameMap.put("0B653680", new RfidInfo("ROME", 20));
+  uidNameMap.put("D3103580", new RfidInfo("SEOUL", 21));
+  uidNameMap.put("E9253680", new RfidInfo("PARIS", 22));
+  uidNameMap.put("E23F3580", new RfidInfo("TOKYO", 23));
 
   uidNameMap.put("12654F05", new RfidInfo("SALARY", 0));
-  uidNameMap.put("BORAN5", new RfidInfo("ISLAND", 6));
-  uidNameMap.put("BORAN6", new RfidInfo("EVENT", 18));
-  uidNameMap.put("BORAN7", new RfidInfo("SPACE", 12));
 
 
   Table t = loadTable("country.csv", "header");
@@ -96,92 +99,82 @@ void setup() {
       cityNames[info.boardIndex] = info.name;
     }
   }
-  
-  int sidebarWidth = 320; 
+
+  // 1. 레이아웃 계산 (8x6 구조, 총 24칸)
+  int sidebarWidth = 320;
   int cornerSize = 110;
-  int cellW = 100; 
-  
-  int boardW = (cornerSize * 2) + (cellW * 6); // 820
-  int boardH = (cornerSize * 2) + (cellW * 4); // 620
-  
-  // 우측 영역 중앙 정렬
+  int cellW = 100;
+
+  // 전체 보드 크기: 820 x 620
+  int boardW = (cornerSize * 2) + (cellW * 6);
+  int boardH = (cornerSize * 2) + (cellW * 4);
+
+  // 우측 영역 중앙 정렬 시작점 (좌상단 기준)
   int startX = sidebarWidth + (width - sidebarWidth - boardW) / 2;
   int startY = (height - boardH) / 2;
 
-  // 3. 순서대로(0~23) 버튼 좌표 계산 및 생성
+  // 2. 버튼 생성 (0번: 좌상단 Start -> 시계 방향)
   for (int i = 0; i < 24; i++) {
-    // 혹시라도 이름이 비어있으면(매핑 누락) "Empty"로 채움 (에러 방지)
-    if (cityNames[i] == null) cityNames[i] = "EMPTY"; 
+    if (cityNames[i] == null) cityNames[i] = "EMPTY";
 
     float bx = 0, by = 0;
     float bw = 0, bh = 0;
 
-    if (i >= 0 && i < 7) { 
-      // [하단] 0(출발) ~ 6(무인도) : 오른쪽 -> 왼쪽
-      if (i == 0) { // 출발점(코너)
-        bx = startX + boardW - cornerSize/2.0f;
-        bw = cornerSize;
-      } else {
-        bx = (startX + boardW - cornerSize) - (cellW/2.0f) - ((i - 1) * cellW);
-        bw = cellW;
-      }
-      by = startY + boardH - cornerSize/2.0f;
+    if (i == 0) {
+      // [0] 좌상단 코너 (START)
+      bx = startX;
+      by = startY;
+      bw = cornerSize;
       bh = cornerSize;
-      
-    } else if (i >= 7 && i < 12) {
-      // [좌측] 7(오타와) ~ 11(코펜하겐) : 아래 -> 위
-      if (i == 7) { // 7번은 그냥 일반 칸이지만 코너 바로 위
-         // (주의: 8x6 구조에서 7번은 코너가 아닙니다. 7번은 오타와)
-         // 6번이 무인도(코너)여야 함. 로직 재확인 필요하지만, 일단 배치 로직 유지
-      }
-      // ※ 중요: 8x6 배치에서 코너는 0, 7, 12, 19번 인덱스여야 모양이 나옴
-      // 하지만 현재 게임 룰(24칸)상 코너는 0(월급), 6(무인도), 12(우주), 18(이벤트) 임.
-      // 따라서 배치는 7칸-5칸-7칸-5칸(총 24)이 아니라, 변의 길이에 맞게 좌표만 잘 잡으면 됨.
-      
-      // 아래는 "시각적 배치"를 위한 로직 (인덱스 i에 따라 좌표 할당)
-      // 하단변(0~6), 좌측변(7~11), 상단변(12~18), 우측변(19~23) ... 총 24개
-      
-      // 하단 (0~6)
-      if (i <= 6) {
-          // 위에서 처리함 (else if 구조 밖으로 빼는 게 좋음, 일단 여기서는 흐름만)
-      }
-    } 
-    
-    // ▲ 위 복잡한 if문 대신 아래의 "단순화된 좌표 계산"을 쓰세요! (강추)
-    
-    if (i == 0) { // 우하단 코너 (월급)
-       bx = startX + boardW - cornerSize/2.0f; by = startY + boardH - cornerSize/2.0f; bw=cornerSize; bh=cornerSize;
-    } else if (i > 0 && i < 7) { // 하단변 (베이징~무인도전) -> 무인도가 6번? 아님. 0~6이면 7칸임.
-       // 24칸을 4변으로 나누면: 7, 5, 7, 5개
-       // 하단: 0(코너) + 1,2,3,4,5 + 6(코너) => 총 7칸
-       bx = (startX + boardW - cornerSize) - (cellW/2.0f) - ((i-1)*cellW);
-       by = startY + boardH - cornerSize/2.0f; bw=cellW; bh=cornerSize;
-       if (i==6) { // 6번이 좌하단 코너(무인도)
-         bx = startX + cornerSize/2.0f; bw=cornerSize;
-       }
-    } else if (i > 6 && i < 12) { // 좌측변 (7~11) 5칸
-       bx = startX + cornerSize/2.0f; 
-       by = (startY + boardH - cornerSize) - (cellW/2.0f) - ((i-7)*cellW);
-       bw=cornerSize; bh=cellW;
-    } else if (i == 12) { // 좌상단 코너 (우주)
-       bx = startX + cornerSize/2.0f; by = startY + cornerSize/2.0f; bw=cornerSize; bh=cornerSize;
-    } else if (i > 12 && i < 18) { // 상단변 (13~17) 5칸 -> 아니 13,14,15,16,17 (5개) + 18(코너)
-       bx = startX + cornerSize + (cellW/2.0f) + ((i-13)*cellW);
-       by = startY + cornerSize/2.0f; bw=cellW; bh=cornerSize;
-    } else if (i == 18) { // 우상단 코너 (이벤트)
-       bx = startX + boardW - cornerSize/2.0f; by = startY + cornerSize/2.0f; bw=cornerSize; bh=cornerSize;
-    } else { // 우측변 (19~23) 5칸
-       bx = startX + boardW - cornerSize/2.0f;
-       by = startY + cornerSize + (cellW/2.0f) + ((i-19)*cellW);
-       bw=cornerSize; bh=cellW;
+    } else if (i > 0 && i < 7) {
+      // [1~6] 상단변 (좌->우)
+      bx = startX + cornerSize + ((i - 1) * cellW);
+      by = startY;
+      bw = cellW;
+      bh = cornerSize;
+    } else if (i == 7) {
+      // [7] 우상단 코너
+      bx = startX + boardW - cornerSize;
+      by = startY;
+      bw = cornerSize;
+      bh = cornerSize;
+    } else if (i > 7 && i < 12) {
+      // [8~11] 우측변 (상->하)
+      bx = startX + boardW - cornerSize;
+      by = startY + cornerSize + ((i - 8) * cellW);
+      bw = cornerSize;
+      bh = cellW;
+    } else if (i == 12) {
+      // [12] 우하단 코너
+      bx = startX + boardW - cornerSize;
+      by = startY + boardH - cornerSize;
+      bw = cornerSize;
+      bh = cornerSize;
+    } else if (i > 12 && i < 18) {
+      // [13~18] 하단변 (우->좌)
+      bx = (startX + boardW - cornerSize) - cellW - ((i - 13) * cellW);
+      by = startY + boardH - cornerSize;
+      bw = cellW;
+      bh = cornerSize;
+    } else if (i == 18) {
+      // [19] 좌하단 코너
+      bx = startX;
+      by = startY + boardH - cornerSize;
+      bw = cornerSize;
+      bh = cornerSize;
+    } else {
+      // [20~23] 좌측변 (하->상)
+      bx = startX;
+      by = (startY + boardH - cornerSize) - cellW - ((i - 19) * cellW);
+      bw = cornerSize;
+      bh = cellW;
     }
 
     cityButtons[i] = new Button((int)bx, (int)by, (int)bw, (int)bh, cityNames[i], i, true);
   }
 
-  // 마지막에 꼭 호출!
+  // 마지막에 위치 초기화 필수!
   initializePlayerPositions();
- 
 }
 
 void draw() {
@@ -199,7 +192,6 @@ void draw() {
 
   // 2. [기본 레이어] 항상 보여야 하는 것들 (사이드바 + 보드판 + 말)
   drawSidebar();       // ① 왼쪽 플레이어 정보창 그리기
-  //drawGameBoard();     // ② 오른쪽 보드판(버튼들) 그리기
   drawPlayers();       // ③ 플레이어 자동차 그리기
 
   // 3. [오버레이 레이어] 상황에 따라 위에 덮어씌우는 것들

@@ -75,7 +75,7 @@ void updateRollAndMaybeMove() {
 
     // 1. 주사위 팝업 닫기 (그래야 보드판이랑 차가 보임)
     dicePopup = false;
-    gameState = "IDLE"; 
+    gameState = "IDLE";
 
     // 2. 순간이동 코드 삭제하고, 내비게이션 이동 함수 호출!
     // Player p = players[currentPlayer];                 <-- 삭제
