@@ -1,11 +1,13 @@
-import processing.serial.*;
 import java.util.Collections;
+import processing.net.*;
 
 
 void setup() {
   size(1280, 720, P3D);
   background(#fafafa);
   textureMode(NORMAL);
+  
+  myClient = new Client(this, "172.20.10.2", 8888);
 
   boardImage = loadImage("board.png"); // data 폴더에 이미지 넣어야 함
 

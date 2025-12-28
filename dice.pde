@@ -72,6 +72,12 @@ void updateRollAndMaybeMove() {
   if (rollEnded && resultHoldFrames == 0 && dicePopup) {
 
     println("주사위 연출 종료! " + diceNumber + "칸 이동 시작.");
+    if (myClient.active()) {
+      myClient.write(diceNumber); // 숫자 그대로 전송 (예: 3)
+      println("아두이노로 " + diceNumber + " 전송 완료!");
+    } else {
+      println("아두이노 연결 안 됨, 전송 실패");
+    }
 
     // 1. 주사위 팝업 닫기 (그래야 보드판이랑 차가 보임)
     dicePopup = false;

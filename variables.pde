@@ -1,5 +1,7 @@
 Button yesButton, noButton, buyButton, confirmButton, rollButton;
 Quantity villa, building, hotel;
+Client myClient;
+
 
 Button[] cityButtons;
 String[] cityNames;
