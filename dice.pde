@@ -71,16 +71,21 @@ void updateRollAndMaybeMove() {
 
   if (rollEnded && resultHoldFrames == 0 && dicePopup) {
 
-    Player p = players[currentPlayer];
-    p.position = (p.position + diceNumber) % BOARD_SIZE;
-    println(p.name + " → " + diceNumber + "칸 이동, pos=" + p.position);
+    println("주사위 연출 종료! " + diceNumber + "칸 이동 시작.");
 
-    // 도착칸 이벤트 실행 및 팝업 상태 변경
-    processBoardIndex(p.position);
-
-    // 이 로직이 다시 실행되는 것을 막기 위해 값을 변경
-    resultHoldFrames = -1; // 또는 rollEnded = false;
+    // 1. 주사위 팝업 닫기 (그래야 보드판이랑 차가 보임)
     dicePopup = false;
+    gameState = "IDLE"; 
+
+    // 2. 순간이동 코드 삭제하고, 내비게이션 이동 함수 호출!
+    // Player p = players[currentPlayer];                 <-- 삭제
+    // p.position = (p.position + diceNumber) % ...;      <-- 삭제 (순간이동 원인)
+    // processBoardIndex(p.position);                     <-- 삭제 (즉시 실행 원인)
+
+    movePlayer(diceNumber); // ★ 이걸 호출해야 스르륵 움직임!
+
+    // 3. 로직 종료 처리
+    resultHoldFrames = -1;
   }
 }
 
