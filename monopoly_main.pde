@@ -8,13 +8,12 @@ void setup() {
   textureMode(NORMAL);
 
   myClient = new Client(this, "172.20.10.2", 8888);
-
   boardImage = loadImage("board.png"); // data 폴더에 이미지 넣어야 함
 
   initDice();
   players = new Player[2];
   players[0] = new Player(1, "Player 1", 800000);
-  players[1] = new Player(2, "Player 2", 400);
+  players[1] = new Player(2, "Player 2", 800000);
 
   p = players[0];
 
@@ -22,16 +21,17 @@ void setup() {
   yesButton = new Button(690, 400, 100, 40, "YES", -1);
   noButton = new Button(810, 400, 100, 40, "NO", -1);
 
-  buyButton = new Button(width/2, 617, 218, 62, "BUY", -1, true);
-  confirmButton = new Button(width/2, 617, 218, 62, "CONFIRM", -1, true);
-  rollButton = new Button(width/2, 617, 218, 62, "ROLL", -1, true);
+  buyButton = new Button(800, 580, 218, 62, "BUY", -1, true);
+  confirmButton = new Button(800, 580, 218, 62, "CONFIRM", -1, true);
+
+  rollButton = new Button(160, 650, 218, 62, "ROLL", -1, true);
 
   messageX = 800;
   messageY = 360;
 
-  villa = new Quantity(234, 527, 0, 2, 0, "VILLA");
-  building = new Quantity(576, 527, 0, 1, 0, "BUILDING");
-  hotel = new Quantity(929, 527, 0, 1, 0, "HOTEL");
+  villa = new Quantity(660, 480, 0, 2, 0, "VILLA");     // 왼쪽
+  building = new Quantity(800, 480, 0, 1, 0, "BUILDING"); // 중앙
+  hotel = new Quantity(940, 480, 0, 1, 0, "HOTEL");       // 오른쪽
 
   font = loadFont("NotoSansKR-Thin_Bold-48.vlw");
 
@@ -95,6 +95,7 @@ void setup() {
 
   cityNames = new String[24];
   cityButtons = new Button[24];
+  spaceButtons = new Button[24]; // 24개 도시
 
   println(cityNames.length);
   int index = 0;
@@ -114,7 +115,7 @@ void setup() {
   int boardH = (cornerSize * 2) + (cellW * 4);
 
   // 우측 영역 중앙 정렬 시작점 (좌상단 기준)
-  int startX = sidebarWidth + (width - sidebarWidth - boardW) / 2;
+  int startX = (sidebarWidth + (width - sidebarWidth - boardW) / 2);
   int startY = (height - boardH) / 2;
 
   // 2. 버튼 생성 (0번: 좌상단 Start -> 시계 방향)
@@ -154,31 +155,99 @@ void setup() {
       by = startY + boardH - cornerSize;
       bw = cornerSize;
       bh = cornerSize;
-    } else if (i > 12 && i < 18) {
+    } else if (i > 12 && i < 19) {
       // [13~18] 하단변 (우->좌)
       bx = (startX + boardW - cornerSize) - cellW - ((i - 13) * cellW);
       by = startY + boardH - cornerSize;
       bw = cellW;
       bh = cornerSize;
-    } else if (i == 18) {
+    } else if (i == 19) {
       // [19] 좌하단 코너
       bx = startX;
       by = startY + boardH - cornerSize;
       bw = cornerSize;
       bh = cornerSize;
-    } else {
+    } else if (i > 19 && i <24) {
       // [20~23] 좌측변 (하->상)
       bx = startX;
-      by = (startY + boardH - cornerSize) - cellW - ((i - 19) * cellW);
+      by = (startY + boardH - cornerSize) - ((i - 19) * cellW);
       bw = cornerSize;
       bh = cellW;
     }
-
     cityButtons[i] = new Button((int)bx, (int)by, (int)bw, (int)bh, cityNames[i], i, true);
   }
 
   // 마지막에 위치 초기화 필수!
   initializePlayerPositions();
+
+  // 팝업 내 보드판 시작 위치 (필요에 따라 조절하세요)
+  int startX2 = 440;
+  int startY2 = 100; // 300은 너무 아래라 잘릴 수 있어서 100으로 올림 (화면 높이 고려)
+
+  // 사이즈 설정 (팝업이니까 작게 줄이고 싶으면 이 값들을 줄이세요. 예: 55, 50)
+  int cornerS = 110; // 코너 크기 (기본값)
+  int cellS = 100;   // 일반 칸 크기 (기본값)
+
+  // 전체 크기 계산 (자동)
+  int bW = (cornerS * 2) + (cellS * 6);
+  int bH = (cornerS * 2) + (cellS * 4);
+
+  for (int i = 0; i < 24; i++) {
+    float bx = 0, by = 0;
+    float bw = 0, bh = 0;
+
+    if (i == 0) {
+      // [0] 좌상단 코너 (START)
+      bx = startX2;
+      by = startY2;
+      bw = cornerS;
+      bh = cornerS;
+    } else if (i > 0 && i < 7) {
+      // [1~6] 상단변 (좌->우)
+      bx = startX2 + cornerS + ((i - 1) * cellS);
+      by = startY2;
+      bw = cellS;
+      bh = cornerS;
+    } else if (i == 7) {
+      // [7] 우상단 코너
+      bx = startX2 + bW - cornerS;
+      by = startY2;
+      bw = cornerS;
+      bh = cornerS;
+    } else if (i > 7 && i < 12) {
+      // [8~11] 우측변 (상->하)
+      bx = startX2 + bW - cornerS;
+      by = startY2 + cornerS + ((i - 8) * cellS);
+      bw = cornerS;
+      bh = cellS;
+    } else if (i == 12) {
+      // [12] 우하단 코너
+      bx = startX2 + bW - cornerS;
+      by = startY2 + bH - cornerS;
+      bw = cornerS;
+      bh = cornerS;
+    } else if (i > 12 && i < 19) {
+      // [13~18] 하단변 (우->좌)
+      bx = (startX2 + bW - cornerS) - cellS - ((i - 13) * cellS);
+      by = startY2 + bH - cornerS;
+      bw = cellS;
+      bh = cornerS;
+    } else if (i == 19) {
+      bx = startX2;
+      by = startY2 + bH - cornerS;
+      bw = cornerS;
+      bh = cornerS;
+    } else {
+      // [20~23] 좌측변 (하->상)
+      bx = startX2;
+      by = (startY2 + bH - cornerS) - ((i - 19) * cellS);
+      bw = cornerS;
+      bh = cellS;
+    }
+
+    // 버튼 생성 (기존 cityNames와 인덱스 i 유지)
+    spaceButtons[i] = new Button((int)bx, (int)by, (int)bw, (int)bh, cityNames[i], i, true);
+  }
 }
 
 void draw() {
@@ -188,11 +257,10 @@ void draw() {
   int boardW = (110 * 2) + (100 * 6); // 820
   int boardH = (110 * 2) + (100 * 4); // 620
   int sidebarWidth = 320;
-  int startX = sidebarWidth + (width - sidebarWidth - boardW) / 2;
+  int startX = (sidebarWidth + (width - sidebarWidth - boardW) / 2);
   int startY = (height - boardH) / 2;
 
   image(boardImage, startX, startY, boardW, boardH);
-
 
   // 2. [기본 레이어] 항상 보여야 하는 것들 (사이드바 + 보드판 + 말)
   drawSidebar();       // ① 왼쪽 플레이어 정보창 그리기

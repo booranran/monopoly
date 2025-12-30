@@ -3,6 +3,7 @@ Quantity villa, building, hotel;
 Client myClient;
 
 Button[] cityButtons;
+Button[] spaceButtons;
 String[] cityNames;
 
 String countryName = "";
@@ -49,6 +50,14 @@ HashMap<String, Country> countryData = new HashMap<String, Country>();
 final int BOARD_SIZE = 24;
 PImage boardImage;
 int textSize = 30;
+// [variables.pde]
+// 보드판의 시작 위치를 저장할 전역 변수 선언
+int boardStartX;
+int boardStartY;
+
+// 이미지와 그리드 사이의 미세한 오차를 보정하는 변수 (이게 "좋은 코드"의 핵심!)
+int imageOffsetX = 30; // 보정값: X축으로 30px 이동
+int imageOffsetY = 0;  // 보정값: Y축 필요하면 수정
 
 //주사위
 float angleX = 0.0f;

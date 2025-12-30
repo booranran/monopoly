@@ -86,6 +86,7 @@ void showChooseBuildingPopup() {
 
 void showTollPopup() {
   // 팝업에 표시될 텍스트
+  textSize(textSize);
   text(selectedCountry.name + "에 도착했습니다!", messageX, messageY - 50);
   text(selectedCountry.ownerId + "P의 땅입니다.", messageX, messageY - 20);
   text("통행료 " + selectedCountry.currentRent() + "원을 지불해야 합니다.", messageX, messageY + 30);
@@ -154,7 +155,7 @@ void showSpacePopup() {
 
   text("우주 여행을 떠나자!", messageX, messageY);
   for (int i = 0; i<cityButtons.length; i++) {
-    cityButtons[i].display();
+    spaceButtons[i].display();
   }
 }
 
@@ -581,15 +582,10 @@ void mousePressed() {
   case "SPACE":
     if (spacePopup) {
       for (int i = 0; i < cityButtons.length; i++) {
-        if (cityButtons[i].isMouseOver()) {
-          String destinationName = cityButtons[i].label;
+        if (spaceButtons[i].isMouseOver()) {
+          String destinationName = spaceButtons[i].label;
           println(destinationName + " 선택함");
 
-          // 1. 유효성 체크
-          if (!countryData.containsKey(destinationName)) {
-            println("알 수 없는 목적지");
-            return;
-          }
 
           // 2. 보드 인덱스 찾아서 이동
           for (String uid : uidNameMap.keySet()) {
@@ -633,7 +629,7 @@ void mousePressed() {
 
 void keyTyped() {
   if (key == '1') {
-    processTagEvent("41103480"); // 베이징 태그
+    processTagEvent("BORAN7"); // 베이징 태그
   } else if (key == '2') {
     processTagEvent("95363480"); // 이스탄불  태그
   } else if (key=='3') {
