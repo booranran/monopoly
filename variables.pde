@@ -2,7 +2,6 @@ Button yesButton, noButton, buyButton, confirmButton, rollButton;
 Quantity villa, building, hotel;
 Client myClient;
 
-
 Button[] cityButtons;
 String[] cityNames;
 
@@ -14,6 +13,9 @@ boolean showButtons;
 PFont font;
 int money = 5000000;
 int salary = 20000;
+
+int messageX;
+int messageY;
 
 float money_X;
 float money_Y;
@@ -46,6 +48,7 @@ HashMap<String, Country> countryData = new HashMap<String, Country>();
 // 보드
 final int BOARD_SIZE = 24;
 PImage boardImage;
+int textSize = 30;
 
 //주사위
 float angleX = 0.0f;

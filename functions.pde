@@ -20,7 +20,7 @@ void showDicePopup() {
     fill(0);
     textAlign(CENTER, CENTER);
     textSize(18);
-    text("결과: " + diceNumber, width/2, height/2 + 140);
+    text("결과: " + diceNumber, messageX, messageY + 140);
   }
   popStyle();
 }
@@ -31,11 +31,12 @@ void showBuyLandPopup(String country) {
   if (selectedCountry != null) {
     fill(0);
 
-    text(selectedCountry.name + "을(를) 구매 하시겠습니까?", 320 + (width-320)/2, height/2 + fallY);
+    textSize(textSize);
+    text(selectedCountry.name + "을(를) 구매 하시겠습니까?", messageX, messageY - 20);
     if (p.money < selectedCountry.price) {
-      // 돈이 부족하면 yes 버튼 비활성화
       yesButton.enabled = false;
-      text("돈이 부족해서 구매할 수 없습니다.", width/2, height/2 + 50);
+      textSize(20);
+      text("돈이 부족해서 구매할 수 없습니다.", messageX, messageY + 15);
     } else {
       // 돈이 충분하면 yes 버튼 활성화
       yesButton.enabled = true;
@@ -51,9 +52,8 @@ void showBuyLandPopup(String country) {
 
 void showBuyBuildingPopup() {
 
-  textSize(32);
-  text("건물을 지을까요?", width/2, height/2-50);
-  text("현재자산: " + p.money, money_X, money_Y);
+  textSize(textSize);
+  text("건물을 지을까요?", messageX, messageY);
   yesButton.display();
   noButton.display();
 
@@ -63,14 +63,13 @@ void showBuyBuildingPopup() {
 }
 
 void showChooseBuildingPopup() {
-  textSize(32);
-  text("건물을 골라주세요", width/2, height/2-50);
-  text("현재자산: " + displayMoney(), money_X, money_Y);
+  textSize(textSize);
+  text("건물을 골라주세요", messageX, messageY);
 
   if (displayMoney()<0) {
     // 돈이 부족하면 yes 버튼 비활성화
     buyButton.enabled = false;
-    text("돈이 부족해서 구매할 수 없습니다.", width/2, height/2 + 50);
+    text("돈이 부족해서 구매할 수 없습니다.", messageX, messageY + 50);
   } else {
     // 돈이 충분하면 yes 버튼 활성화
     buyButton.enabled = true;
@@ -83,17 +82,16 @@ void showChooseBuildingPopup() {
 
   buyBuildingPopup = false;
   gameState = "CHOOSE_BUILDING";
-  //text("test", width/2, height/2);
 }
 
 void showTollPopup() {
   // 팝업에 표시될 텍스트
-  text(selectedCountry.name + "에 도착했습니다!", width/2, height/2 - 50);
-  text(selectedCountry.ownerId + "P의 땅입니다.", width/2, height/2 - 20);
-  text("통행료 " + selectedCountry.currentRent() + "원을 지불해야 합니다.", width/2, height/2 + 30);
+  text(selectedCountry.name + "에 도착했습니다!", messageX, messageY - 50);
+  text(selectedCountry.ownerId + "P의 땅입니다.", messageX, messageY - 20);
+  text("통행료 " + selectedCountry.currentRent() + "원을 지불해야 합니다.", messageX, messageY + 30);
 
   if (p.money<selectedCountry.currentRent()) {
-    text("지불 할 돈이 없습니다!", width/2, height/2 + 80);
+    text("지불 할 돈이 없습니다!", messageX, messageY + 80);
     p.isBankrupt = true;
   }
 
@@ -121,33 +119,40 @@ void showcheckGameEnd() {
     gameState = "THE_END";
     gameEndPopup = true;
     println("게임 종료! 승자는 " + winner.name + "입니다.");
-    text("게임 종료! 승자는 " + winner.name + "입니다!", width/2, height/2);
+    text("게임 종료! 승자는 " + winner.name + "입니다!", messageX, messageY);
   }
 }
 
 void showSalaryPopup() {
-  text("와! 월급날이다!", width/2, height/2);
+  textSize(textSize);
+
+  text("와! 월급날이다!", messageX, messageY);
   confirmButton.display();
 }
 
 void showIslandPopup() {
-  text("무인도에 갇혔다!!", width/2, height/2);
-  text(currentMessage, width/2, height/2 + 30);
+  textSize(textSize);
+  text("무인도에 갇혔다!!", messageX, messageY);
+  text(currentMessage, messageX, messageY + 30);
   confirmButton.display();
 }
 
 void showEventPopup() {
-  text("랜덤 이벤트 발생!", width/2, height/2);
-  text(currentMessage, width/2, height/2 + 50);
+  textSize(textSize);
+
+  text("랜덤 이벤트 발생!", messageX, messageY);
+  text(currentMessage, messageX, messageY + 50);
   pushStyle();
   textSize(20);
-  text(detail_currentMessage, width/2, height/2 + 80);
+  text(detail_currentMessage, messageX, messageY + 80);
   popStyle();
   confirmButton.display();
 }
 
 void showSpacePopup() {
-  text("우주 여행을 떠나자!", width/2, height/2);
+  textSize(textSize);
+
+  text("우주 여행을 떠나자!", messageX, messageY);
   for (int i = 0; i<cityButtons.length; i++) {
     cityButtons[i].display();
   }

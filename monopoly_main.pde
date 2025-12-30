@@ -6,7 +6,7 @@ void setup() {
   size(1280, 720, P3D);
   background(#fafafa);
   textureMode(NORMAL);
-  
+
   myClient = new Client(this, "172.20.10.2", 8888);
 
   boardImage = loadImage("board.png"); // data 폴더에 이미지 넣어야 함
@@ -19,13 +19,15 @@ void setup() {
   p = players[0];
 
   showButtons = true;
-  yesButton = new Button(403, 617, 218, 62, "YES", -1);
-  noButton = new Button(663, 617, 218, 62, "NO", -1);
-  
+  yesButton = new Button(690, 400, 100, 40, "YES", -1);
+  noButton = new Button(810, 400, 100, 40, "NO", -1);
+
   buyButton = new Button(width/2, 617, 218, 62, "BUY", -1, true);
   confirmButton = new Button(width/2, 617, 218, 62, "CONFIRM", -1, true);
   rollButton = new Button(width/2, 617, 218, 62, "ROLL", -1, true);
 
+  messageX = 800;
+  messageY = 360;
 
   villa = new Quantity(234, 527, 0, 2, 0, "VILLA");
   building = new Quantity(576, 527, 0, 1, 0, "BUILDING");
@@ -202,7 +204,6 @@ void draw() {
   if (gameState.equals("DICE")) {
     drawDiceOverlay();
   }
-
   // (2) 각종 팝업창 (이벤트 발생 시 맨 위에 표시)
   // 기존 if문들을 그대로 쓰되, 'else'로 묶지 말고 필요한 것만 위에 얹음
   if (gameState.equals("BUY_LAND") && buyLandPopup) {
@@ -224,9 +225,6 @@ void draw() {
   } else if (gameState.equals("THE_END") && gameEndPopup) {
     showcheckGameEnd();
   }
-
-  // ※ 'showIdlePopup'은 이제 drawSidebar가 역할을 대신하므로 삭제하거나
-  //   IDLE 상태일 때만 특정 버튼을 보여주는 용도로 축소해야 함.
 }
 boolean isEventPopupState() {
   return gameState.equals("BUY_LAND") || gameState.equals("PAY_TOLL") ||
