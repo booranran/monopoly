@@ -235,38 +235,28 @@ Player nextTurn() {
 }
 
 void movePlayer(int steps) {
-  // 현재 턴인 플레이어 가져오기 (p 변수가 전역이라면 p 사용, 아니면 배열에서 가져오기)
-  // 안전하게 배열에서 가져오는 방식 추천
   Player cp = players[currentPlayer];
-
   int startPos = cp.position;
-  int finalPos = (startPos + steps) % cityNames.length; // 혹은 BOARD_SIZE
+  int finalPos = (startPos + steps) % cityNames.length;
 
-  // 1. 월급 체크 (로직 유지)
+  // 1. 월급 체크 (지나가기만 해도 지급)
   if (startPos + steps >= cityNames.length) {
     cp.money += 20000;
+    // [수정] 화면에 보이게 메시지 업데이트!
+    currentMessage = "한 바퀴 돌아 월급 20000원을 받았습니다!";
     println(cp.name + " 월급 획득! (+20000)");
   }
 
-  // 2. 논리적 위치는 미리 업데이트 (데이터상으로는 이미 도착)
+  // 2. 위치 업데이트 등 나머지 코드는 그대로 유지...
   cp.position = finalPos;
 
-  // 3. ★ 핵심: 이동 경로 예약하기 (애니메이션용) ★
-  // 한 칸씩 건너가면서 모든 좌표를 pathQueue에 담아야 함
   for (int i = 1; i <= steps; i++) {
     int nextIndex = (startPos + i) % cityNames.length;
-
-    // 해당 칸의 버튼(투명 내비게이션) 가져오기
     Button target = cityButtons[nextIndex];
-
-    // 버튼의 정중앙 좌표 계산
     float destX = target.x + target.w / 1.5f;
     float destY = target.y + target.h / 1.5f;
-
-    // 큐에 추가 (이제 updateAndDraw가 이걸 보고 움직임)
     cp.pathQueue.add(new PVector(destX, destY));
   }
-
   println("이동 경로 계산 완료. 출발!");
 }
 
@@ -281,13 +271,38 @@ void selectRandomEvent() {
     // 이벤트 결과를 팝업에 표시
     currentMessage = event.description;
     detail_currentMessage = event.detail_desc;
+
+    // [1] 무인도 상태 설정
     p.isIslanded = true;
     p.islandTurns = 0;
-  } else {
-    // 현재 플레이어의 돈을 업데이트
-    p.money += event.moneyChange;
 
-    // 이벤트 결과를 팝업에 표시
+    // [2] 무인도(Index 7)로 강제 이동 로직 추가
+    int targetIndex = 7; // 무인도 위치
+    int currentPos = p.position;
+
+    // 현재 위치에서 무인도까지 거리 계산 (시계 방향)
+    int steps = (targetIndex - currentPos + 24) % 24;
+
+    println("무인도로 떠내려갑니다... (" + steps + "칸 이동)");
+
+    // [중요] movePlayer()를 안 쓰고 직접 경로만 추가함 (월급 방지!)
+    for (int i = 1; i <= steps; i++) {
+      int nextIndex = (currentPos + i) % 24;
+      Button target = cityButtons[nextIndex];
+
+      // 버튼 중앙 좌표 계산
+      float destX = target.x + target.w / 1.5f;
+      float destY = target.y + target.h / 1.5f;
+
+      // 이동 경로에 추가 (애니메이션)
+      p.pathQueue.add(new PVector(destX, destY));
+    }
+
+    // 논리적 위치를 즉시 무인도로 업데이트
+    p.position = targetIndex;
+  } else {
+    // (나머지 else 블록은 그대로 유지)
+    p.money += event.moneyChange;
     currentMessage = event.description;
     detail_currentMessage = event.detail_desc;
   }
@@ -315,13 +330,11 @@ void drawPlayers() {
   }
 }
 
-// [3] 왼쪽 사이드바 그리기 (여기로 정보창 이사!)
 void drawSidebar() {
 
   // 구분선
   stroke(200);
   line(320, 0, 320, height);
-
   // 텍스트 정보 표시
   fill(0);
   textAlign(LEFT, TOP);
@@ -336,25 +349,42 @@ void drawSidebar() {
   text("현재 턴: " + p.name, 20, 90);
   text("자산: " + p.money + "원", 20, 120);
 
-  // 소유한 땅 목록
-  text("-----------------------", 20, 160);
-  text("[ 소유한 땅 목록 ]", 20, 180);
+  // [추가] 다른 플레이어 현황 표시 --------------------------
+  int otherPlayerY = 160; // 시작 위치
+  textSize(14);
+  fill(80); // 약간 흐리게 해서 구분
+  text("[ 전체 자산 현황 ]", 20, otherPlayerY);
+
+  otherPlayerY += 25;
+
+  for (int i = 0; i < players.length; i++) {
+    String prefix = (players[i] == p) ? "> " : "  "; // 현재 턴 플레이어 화살표 표시
+    text(prefix + players[i].name + ": " + players[i].money + "원", 20, otherPlayerY);
+    otherPlayerY += 20;
+  }
+  // ----------------------------------------------------
+
+  // 소유한 땅 목록 (위치를 otherPlayerY 기준으로 밀어줌)
+  fill(0); // 다시 검은색
+  textSize(18);
+  text("-----------------------", 20, otherPlayerY + 10);
+  text("[ 소유한 땅 목록 ]", 20, otherPlayerY + 30);
 
   textSize(14);
-  int y = 210;
+  int y = otherPlayerY + 60; // 땅 목록 시작 위치 자동 조정
+
   for (String land : p.ownedCountries) {
     text("• " + land, 25, y);
     y += 25;
   }
 
-  // [중요] 주사위 굴리기 버튼은 'IDLE' 상태일 때만 사이드바 하단에 표시
+  // [중요] 주사위 굴리기 버튼
   if (gameState.equals("IDLE") && !p.isMoving) {
-    rollButton.x = 160;   // 사이드바 가운데 좌표
-    rollButton.y = 650;   // 아래쪽
+    rollButton.x = 160;
+    rollButton.y = 650;
     rollButton.display();
   }
 }
-
 
 void initializePlayerPositions() {
   if (cityButtons != null && cityButtons.length > 0) {
@@ -373,13 +403,10 @@ void initializePlayerPositions() {
 // [추가] 플레이어가 시각적으로 목적지에 도착했을 때 호출되는 함수
 void handlePlayerArrival(int playerId) {
   // 1. 도착한 플레이어 객체 찾기
-  // (배열은 0부터 시작하니까 id가 1이면 index는 0)
   Player p = players[playerId - 1];
-
   println("플레이어 " + playerId + " 도착 완료! 이벤트 실행.");
 
   // 2. 해당 위치의 이벤트(팝업) 실행하기
-  // 기존에 있던 processBoardIndex 함수를 여기서 호출하는 거야
   processBoardIndex(p.position);
 }
 
@@ -545,7 +572,6 @@ void mousePressed() {
           return;
         }
         // 통행료 지불이 끝났으니, 다음 턴으로 넘기고 팝업 닫기
-
         payTollPopup = false;
         Turn();
         gameState = "IDLE";
@@ -554,7 +580,7 @@ void mousePressed() {
     }
   case "SALARY":
     if (confirmButton.isMouseOver()) {
-      p.money += 20000;
+
       println(p.name + "의 돈" + p.money);
       salaryPopup = false;
       Turn();
@@ -593,7 +619,6 @@ void mousePressed() {
 
             if (info.name.equals(destinationName)) {
 
-              // [수정 핵심 1] 현재 위치에서 목표 위치까지 몇 칸 가야 하는지 계산
               int currentPos = p.position;
               int targetPos = info.boardIndex;
 
@@ -604,12 +629,8 @@ void mousePressed() {
               if (steps == 0) steps = 24;
 
               println("우주여행 출발! " + currentPos + " -> " + targetPos + " (" + steps + "칸 이동)");
-
-              // [수정 핵심 2] movePlayer 함수를 써서 '스르륵' 이동시킴
-              // (이 함수가 도착하면 알아서 팝업도 띄워줌)
               movePlayer(steps);
 
-              // [수정 핵심 3] 팝업 닫기 (Turn() 호출 절대 금지!)
               spacePopup = false;
               gameState = "IDLE";
 
@@ -628,10 +649,21 @@ void mousePressed() {
 }
 
 void keyTyped() {
+  if (key == ' ') {
+    // 1. 현재 게임 상태가 IDLE이고
+    // 2. 플레이어가 움직이는 중이 아닐 때만 작동
+    if (gameState.equals("IDLE") && !p.isMoving) {
+      dicePopup = true;
+      gameState = "DICE";
+      startRoll();
+      println("Spacebar: Let's roll!");
+      return; // 주사위 굴리고 함수 종료
+    }
+  }
   if (key == '1') {
     processTagEvent("BORAN7"); // 베이징 태그
   } else if (key == '2') {
-    processTagEvent("95363480"); // 이스탄불  태그
+    processTagEvent("BORAN6"); // 이스탄불  태그
   } else if (key=='3') {
     processTagEvent("1E7b3480");
   } else if (key=='4') {

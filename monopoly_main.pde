@@ -12,8 +12,8 @@ void setup() {
 
   initDice();
   players = new Player[2];
-  players[0] = new Player(1, "Player 1", 800000);
-  players[1] = new Player(2, "Player 2", 800000);
+  players[0] = new Player(1, "Player 1", 1000000);
+  players[1] = new Player(2, "Player 2", 1000000);
 
   p = players[0];
 
@@ -191,6 +191,8 @@ void setup() {
   // 전체 크기 계산 (자동)
   int bW = (cornerS * 2) + (cellS * 6);
   int bH = (cornerS * 2) + (cellS * 4);
+  int playerOffsetY = 30;
+
 
   for (int i = 0; i < 24; i++) {
     float bx = 0, by = 0;

@@ -62,7 +62,7 @@ class Player {
   float visualX, visualY;
   ArrayList<PVector> pathQueue; // ★ 변수 선언
   boolean isMoving = false;
-  float moveSpeed = 0.1;
+  float moveSpeed = 0.3;
 
   // 생성자
   Player(int id, String name, int startMoney) {
