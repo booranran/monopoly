@@ -191,7 +191,6 @@ void setup() {
   // 전체 크기 계산 (자동)
   int bW = (cornerS * 2) + (cellS * 6);
   int bH = (cornerS * 2) + (cellS * 4);
-  int playerOffsetY = 30;
 
 
   for (int i = 0; i < 24; i++) {

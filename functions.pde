@@ -254,7 +254,7 @@ void movePlayer(int steps) {
     int nextIndex = (startPos + i) % cityNames.length;
     Button target = cityButtons[nextIndex];
     float destX = target.x + target.w / 1.5f;
-    float destY = target.y + target.h / 1.5f;
+    float destY = (target.y + target.h / 1.5f) + playerOffsetY;
     cp.pathQueue.add(new PVector(destX, destY));
   }
   println("이동 경로 계산 완료. 출발!");
@@ -292,7 +292,7 @@ void selectRandomEvent() {
 
       // 버튼 중앙 좌표 계산
       float destX = target.x + target.w / 1.5f;
-      float destY = target.y + target.h / 1.5f;
+      float destY = (target.y + target.h / 1.5f) + playerOffsetY;
 
       // 이동 경로에 추가 (애니메이션)
       p.pathQueue.add(new PVector(destX, destY));
@@ -393,7 +393,7 @@ void initializePlayerPositions() {
     // 플레이어들을 출발지 좌표로 강제 이동
     for (Player p : players) {
       p.visualX = startBtn.x + startBtn.w / 1.5f;
-      p.visualY = startBtn.y + startBtn.h / 1.5f;
+      p.visualY = (startBtn.y + startBtn.h / 1.5f) + playerOffsetY;
     }
     println("플레이어 위치 초기화 완료: " + players[0].visualX + ", " + players[0].visualY);
   }
