@@ -64,7 +64,7 @@ void showBuyBuildingPopup() {
 
 void showChooseBuildingPopup() {
   textSize(textSize);
-  text("건물을 골라주세요", messageX, messageY);
+  text("건물을 골라주세요", messageX, messageY - 50);
 
   if (displayMoney()<0) {
     // 돈이 부족하면 yes 버튼 비활성화
@@ -242,7 +242,6 @@ void movePlayer(int steps) {
   // 1. 월급 체크 (지나가기만 해도 지급)
   if (startPos + steps >= cityNames.length) {
     cp.money += 20000;
-    // [수정] 화면에 보이게 메시지 업데이트!
     currentMessage = "한 바퀴 돌아 월급 20000원을 받았습니다!";
     println(cp.name + " 월급 획득! (+20000)");
   }
@@ -380,9 +379,27 @@ void drawSidebar() {
 
   // [중요] 주사위 굴리기 버튼
   if (gameState.equals("IDLE") && !p.isMoving) {
-    rollButton.x = 160;
-    rollButton.y = 650;
-    rollButton.display();
+
+    if (p.id == 1) {
+      // ★ P1 (사람): ROLL 버튼 활성화
+      rollButton.x = 160;
+      rollButton.y = 650;
+      rollButton.display();
+    } else {
+      // ★ P2 (봇): 버튼 숨기고, 잠시 후 자동 롤!
+      fill(100);
+      textSize(16);
+      textAlign(CENTER);
+      text("봇이 주사위를 굴리는 중...", 160, 650);
+
+      // 봇 자동 실행 (딜레이를 위해 frameCount 활용 추천)
+      if (frameCount % 60 == 0) { // 약 1초 뒤 자동 실행
+        dicePopup = true;
+        gameState = "DICE";
+        startRoll();
+        println("봇(P2)이 주사위를 굴렸습니다!");
+      }
+    }
   }
 }
 

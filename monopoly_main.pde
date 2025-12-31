@@ -12,8 +12,8 @@ void setup() {
 
   initDice();
   players = new Player[2];
-  players[0] = new Player(1, "Player 1", 1000000);
-  players[1] = new Player(2, "Player 2", 1000000);
+  players[0] = new Player(1, "Player 1", 10000000);
+  players[1] = new Player(2, "Player 2", 10000000);
 
   p = players[0];
 
@@ -21,17 +21,17 @@ void setup() {
   yesButton = new Button(690, 400, 100, 40, "YES", -1);
   noButton = new Button(810, 400, 100, 40, "NO", -1);
 
-  buyButton = new Button(800, 580, 218, 62, "BUY", -1, true);
-  confirmButton = new Button(800, 580, 218, 62, "CONFIRM", -1, true);
+  buyButton = new Button(800, 530, 218, 62, "BUY", -1, true);
+  confirmButton = new Button(800, 450, 218, 62, "CONFIRM", -1, true);
 
   rollButton = new Button(160, 650, 218, 62, "ROLL", -1, true);
 
   messageX = 800;
   messageY = 360;
 
-  villa = new Quantity(660, 480, 0, 2, 0, "VILLA");     // 왼쪽
-  building = new Quantity(800, 480, 0, 1, 0, "BUILDING"); // 중앙
-  hotel = new Quantity(940, 480, 0, 1, 0, "HOTEL");       // 오른쪽
+  villa = new Quantity(660, 430, 0, 2, 0, "VILLA");     // 왼쪽
+  building = new Quantity(800, 430, 0, 1, 0, "BUILDING"); // 중앙
+  hotel = new Quantity(940, 430, 0, 1, 0, "HOTEL");       // 오른쪽
 
   font = loadFont("NotoSansKR-Thin_Bold-48.vlw");
 

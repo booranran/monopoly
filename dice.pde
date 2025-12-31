@@ -72,17 +72,24 @@ void updateRollAndMaybeMove() {
   if (rollEnded && resultHoldFrames == 0 && dicePopup) {
 
     println("주사위 연출 종료! " + diceNumber + "칸 이동 시작.");
-    if (myClient.active()) {
-      myClient.write(diceNumber); // 숫자 그대로 전송 (예: 3)
-      println("아두이노로 " + diceNumber + " 전송 완료!");
+
+    // [수정] P1일 때만 아두이노 전송 시도
+    if (p.id == 1) {
+      if (myClient.active()) {
+        myClient.write(diceNumber); 
+        println("[P1] 아두이노로 " + diceNumber + " 전송 완료!");
+      } else {
+        println("[오류] P1 차례지만 아두이노가 연결되지 않았습니다.");
+      }
     } else {
-      println("아두이노 연결 안 됨, 전송 실패");
+      // P2(봇)일 때는 전송 안 함
+      println("[P2] 봇은 가상으로만 이동합니다. (아두이노 전송 X)");
     }
 
-    // 1. 주사위 팝업 닫기 (그래야 보드판이랑 차가 보임)
+    // 1. 주사위 팝업 닫기
     dicePopup = false;
     gameState = "IDLE";
-    movePlayer(diceNumber); // ★ 이걸 호출해야 스르륵 움직임!
+    movePlayer(diceNumber); // 화면상의 이동은 P1, P2 모두 해야 함!
 
     // 3. 로직 종료 처리
     resultHoldFrames = -1;
